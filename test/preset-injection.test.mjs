@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { injectionPolicy, withoutPurgeInjection, isPurgeSection } from '../lib/preset-injection.js';
+import { injectionPolicy, withoutPurgeInjection, isPurgeSection, requestInjectionContext } from '../lib/preset-injection.js';
 import { registerPromptSections, rewriteLiveAssembly, installHungPromptGlobal } from '../lib/index.js';
 import { ALL_PATCHES, applyReplacementsToText } from '../lib/core.js';
 import { writeTuning } from '../lib/tuning.js';
@@ -123,3 +123,15 @@ for(const call of ['globalThis.__dshPurgeHungPrompt()', 'dshPurgeHungFn()']) for
   assert.equal(run.call(context('minimal').agent),'');
   assert(run.call(context('standard').agent));
 }));
+
+test('LLM request lookup uses the exact session ID and preserves allowed-session behavior', () => {
+  const agents=new Map(['standard','minimal'].map(id=>{const a=context(id).agent;a.session.id=id;return [id,a]}));
+  const ctx={get:()=>({get:id=>agents.get(id)})};
+  assert.equal(injectionPolicy(config,requestInjectionContext(ctx,{sessionId:'standard'})).allowed,true);
+  assert.equal(injectionPolicy(config,requestInjectionContext(ctx,{sessionId:'minimal'})).allowed,false);
+  assert.equal(requestInjectionContext(ctx,{sessionId:'gone'}),undefined);
+  assert.equal(requestInjectionContext({get:()=>({get:()=>agents.get('standard')})},{sessionId:'minimal'}),undefined);
+  assert.equal(requestInjectionContext(ctx,{}),undefined);
+  agents.get('standard').session.header.agentPreset='minimal';
+  assert.equal(injectionPolicy(config,requestInjectionContext(ctx,{sessionId:'standard'})).allowed,false);
+});

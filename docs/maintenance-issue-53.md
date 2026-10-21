@@ -17,7 +17,7 @@ excludePresets: [roleplay, minimal]
 ## 覆盖范围
 
 - 主提示、head/tail/both、能力协议、boost、probe、postPrompt；
-- assembly 重写和宿主兜底；可选 refusalRetry 无法识别会话时不追加提示；
+- assembly 重写和宿主兜底；可选 refusalRetry 按请求 sessionId 查询实际 Agent；无法识别会话时不追加提示；
 - 清理带 Purge 命名空间的段落；本版本产生的改写附带内存来源记录，用于恢复自身改写/删除/添加的原生段落；
 - 不改用户文本，不猜测删除历史纯文本中的内容。来源记录不持久化、不发送给模型；从旧版遗留的、已失去来源信息的纯文本应重新装配，不能承诺从历史聊天中抹掉。
 
