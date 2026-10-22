@@ -59,9 +59,9 @@ test('checkpoint cleanup failure is reported separately, without rollback of ver
 });
 test('standalone helpers embed the exact reviewed no-follow cleanup implementation',()=>{
  for(const file of ['scripts/bootstrap-install.mjs','lib/restart-desktop.js','lib/uninstall-restart.js']) {
-  const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
+  const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8').replace(/\r\n/g,'\n');
   const body=source.split('// BEGIN standalone no-follow cleanup (checked against lib/remove-tree.js)\n')[1].split('\n// END standalone no-follow cleanup')[0];
-  assert.equal(body,removeTreeNoFollowSync.toString(),file);
+  assert.equal(body,removeTreeNoFollowSync.toString().replace(/\r\n/g,'\n'),file);
  }
 });
 test('production modules contain no native recursive rm cleanup',()=>{
