@@ -12,7 +12,9 @@ const run = (exe, args, env, label) => {
     fs.writeFileSync(path.join(temp,label+'.log'),out); return out;
   } catch(e) { fs.writeFileSync(path.join(temp,label+'.log'),String(e.stdout||'')+String(e.stderr||'')); throw e; }
 };
-run(process.platform === 'win32' ? 'tar.exe' : 'tar',['-xzf',archive,'-C',temp],process.env,'unpack');
+// Git Bash's GNU tar treats a drive letter as a remote archive host.
+const tar = process.platform === 'win32' ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe') : 'tar';
+run(tar,['-xzf',archive,'-C',temp],process.env,'unpack');
 const candidateRoot=path.join(temp,'package');
 const {Maintenance,validateArchive}=await import(pathToFileURL(path.join(candidateRoot,'lib/community.js')));
 const {installedCommunityPackage}=await import(pathToFileURL(path.join(candidateRoot,'lib/installed-package.js')));
